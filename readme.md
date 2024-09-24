@@ -1,20 +1,20 @@
 # Eco-Friendly Delivery
 
 ## Repository Summary
-This repository contains the code for an eco-friendly delivery tracking application. The app calculates the CO2 savings when cyclists choose to deliver packages by bicycle instead of using gas-powered motorbikes. It provides visual feedback and food suggestions based on calories burned during the delivery process.
+This repository contains the code for an eco-friendly delivery tracking applicatin and on the way pick up system. The app calculates the CO2 savings when customer choose the eco-friendly options to get food or delivery.
 
 ## Technologies Used
 - HTML5
 - CSS3 (with Tailwind CSS utility classes)
 - JavaScript (ES6+)
 - SVG for icons
-- Google MAPs API
 
 ## External Datasets/Tools
-- None. All data is contained within the application.
+- Google MAPs API
 
 ## Secrets and Environment Variables
-This application does not require any secrets or environment variables to run.
+
+
 
 ## Local/Server Settings and Configurations
 No specific settings or configurations are needed. The application runs entirely in the browser.
@@ -54,3 +54,30 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
+
+
+## File Structure
+```
+├── global.css
+├── index.html
+├── mingylee_test
+├── profile
+│   ├── co2Calculations.js
+│   ├── data.js
+│   ├── index.html
+│   ├── logo.gif
+│   ├── replit_zip_error_log.txt
+│   ├── script.js
+│   ├── style.css
+│   ├── test
+│   ├── user-128.svg
+│   └── utilities.js
+├── readme.md
+├── style.css
+└── templates
+    ├── env.js
+    ├── global.css
+    ├── index.html
+    ├── index_new.html
+    └── style.css
+```
