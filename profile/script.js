@@ -34,26 +34,73 @@ function generateResultHTML(distance, co2Equivalents, caloriesBurned, suggestedF
 function generateResultSectionHTML(distance, co2Equivalents) {
     const { totalCO2Saved, leafsEquivalent } = co2Equivalents;
     const leafCount = Math.floor(leafsEquivalent);
-    const maxUniqueLeaves = 10; // We have PNG files from 00.png to 10.png
-    
-    // Generate leaf images with correct path and iteration
-    const leafImages = Array.from({ length: leafCount }, (_, index) => {
-        const imageIndex = index % maxUniqueLeaves; // This will cycle through 0-9 repeatedly
-        const paddedIndex = imageIndex.toString().padStart(2, '0');
-        return `<img src="/profile/leaves/${paddedIndex}.png" alt="Leaf" class="inline-block w-6 h-6 mr-1">`;
-    }).join('');
+    const maxUniqueLeaves = 10; // We have PNG files from 00.png to 09.png
 
     return `
         <div class="result-section mb-6 fade-in-slide-up">
             <h2 class="text-green-700 font-bold text-2xl mb-4">Congratulations! 🌍💚</h2>
             <p class="text-green-700 font-semibold text-lg">By cycling <strong>${distance} km</strong> instead of riding a motorbike, you saved <span class="highlight-co2 text-3xl">${totalCO2Saved.toFixed(2)} kg</span> of CO2!</p>
             <p class="text-green-600 font-bold text-xl mt-4">This is equivalent to growing <span class="highlight-trees text-3xl">${leafsEquivalent.toFixed(0)}</span> leaves!</p>
-            <div class="mt-2 flex flex-wrap">
-                ${leafImages}
-            </div>
+            <div id="leafContainer" class="mt-2 flex flex-wrap"></div>
         </div>
     `;
 }
+
+function animateLeaves(leafCount) {
+    const leafContainer = document.getElementById('leafContainer');
+    const maxUniqueLeaves = 10;
+    let currentLeaf = 0;
+
+    function addLeaf() {
+        if (currentLeaf < leafCount) {
+            const imageIndex = currentLeaf % maxUniqueLeaves;
+            const paddedIndex = imageIndex.toString().padStart(2, '0');
+            const leafImg = document.createElement('img');
+            leafImg.src = `/profile/leaves/${paddedIndex}.png`;
+            leafImg.alt = "Leaf";
+            leafImg.className = "inline-block w-12 h-12 mr-2 mb-2 opacity-0 transition-opacity duration-500";
+            leafContainer.appendChild(leafImg);
+
+            setTimeout(() => {
+                leafImg.classList.remove('opacity-0');
+            }, 50);
+
+            currentLeaf++;
+            setTimeout(addLeaf, 100); // Add a new leaf every 100ms
+        }
+    }
+
+    addLeaf();
+}
+
+function calculateAndSuggest() {
+    console.log("Starting calculateAndSuggest function");
+    const { distance, resultDiv } = setVariables();
+    console.log("Distance:", distance);
+
+    if (isNaN(distance) || distance <= 0) {
+        resultDiv.innerHTML = '<p class="text-red-600 font-medium fade-in">Please enter a valid distance.</p>';
+        return;
+    }
+
+    const caloriesBurned = calculateCaloriesBurned(distance);
+    const co2Equivalents = calculateCO2Equivalents(distance);
+    const suggestedFoods = suggestFoods(caloriesBurned);
+
+    try {
+        const resultHTML = generateResultHTML(distance, co2Equivalents, caloriesBurned, suggestedFoods);
+        resultDiv.innerHTML = resultHTML;
+        
+        // Animate leaves after the result HTML is inserted
+        animateLeaves(Math.floor(co2Equivalents.leafsEquivalent));
+
+        // Scroll to the results after they are generated
+        scrollToResults();
+    } catch (error) {
+        console.error("Error in generateResultHTML:", error);
+    }
+}
+
 
 function generateCaloriesSectionHTML(caloriesBurned) {
     return `
@@ -87,30 +134,6 @@ function generateFoodCardHTML(food, index) {
     `;
 }
 
-function calculateAndSuggest() {
-    console.log("Starting calculateAndSuggest function");
-    const { distance, resultDiv } = setVariables();
-    console.log("Distance:", distance);
-
-    if (isNaN(distance) || distance <= 0) {
-        resultDiv.innerHTML = '<p class="text-red-600 font-medium fade-in">Please enter a valid distance.</p>';
-        return;
-    }
-
-    const caloriesBurned = calculateCaloriesBurned(distance);
-    const co2Equivalents = calculateCO2Equivalents(distance);
-    const suggestedFoods = suggestFoods(caloriesBurned);
-
-    try {
-        const resultHTML = generateResultHTML(distance, co2Equivalents, caloriesBurned, suggestedFoods);
-        resultDiv.innerHTML = resultHTML;
-        
-        // Scroll to the results after they are generated
-        scrollToResults();
-    } catch (error) {
-        console.error("Error in generateResultHTML:", error);
-    }
-}
 
 // New function to handle smooth scrolling
 function scrollToResults() {
