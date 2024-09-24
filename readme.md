@@ -1,4 +1,4 @@
-# Eco-Friendly Delivery: One Pedal at a Time
+# Eco-Friendly Delivery
 
 ## Repository Summary
 This repository contains the code for an eco-friendly delivery tracking application. The app calculates the CO2 savings when cyclists choose to deliver packages by bicycle instead of using gas-powered motorbikes. It provides visual feedback and food suggestions based on calories burned during the delivery process.
@@ -8,6 +8,7 @@ This repository contains the code for an eco-friendly delivery tracking applicat
 - CSS3 (with Tailwind CSS utility classes)
 - JavaScript (ES6+)
 - SVG for icons
+- Google MAPs API
 
 ## External Datasets/Tools
 - None. All data is contained within the application.
