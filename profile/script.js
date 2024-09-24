@@ -33,13 +33,24 @@ function generateResultHTML(distance, co2Equivalents, caloriesBurned, suggestedF
 
 function generateResultSectionHTML(distance, co2Equivalents) {
     const { totalCO2Saved, leafsEquivalent } = co2Equivalents;
-    const leafEmojis = '🍃'.repeat(leafsEquivalent);
+    const leafCount = Math.floor(leafsEquivalent);
+    const maxUniqueLeaves = 10; // We have PNG files from 00.png to 10.png
+    
+    // Generate leaf images with correct path and iteration
+    const leafImages = Array.from({ length: leafCount }, (_, index) => {
+        const imageIndex = index % maxUniqueLeaves; // This will cycle through 0-9 repeatedly
+        const paddedIndex = imageIndex.toString().padStart(2, '0');
+        return `<img src="/profile/leaves/${paddedIndex}.png" alt="Leaf" class="inline-block w-6 h-6 mr-1">`;
+    }).join('');
 
     return `
         <div class="result-section mb-6 fade-in-slide-up">
             <h2 class="text-green-700 font-bold text-2xl mb-4">Congratulations! 🌍💚</h2>
             <p class="text-green-700 font-semibold text-lg">By cycling <strong>${distance} km</strong> instead of riding a motorbike, you saved <span class="highlight-co2 text-3xl">${totalCO2Saved.toFixed(2)} kg</span> of CO2!</p>
-            <p class="text-green-600 font-bold text-xl mt-4">This is equivalent to growing <span class="highlight-trees text-3xl">${leafsEquivalent.toFixed(0)}</span> leaves! <br> ${leafEmojis}</p>
+            <p class="text-green-600 font-bold text-xl mt-4">This is equivalent to growing <span class="highlight-trees text-3xl">${leafsEquivalent.toFixed(0)}</span> leaves!</p>
+            <div class="mt-2 flex flex-wrap">
+                ${leafImages}
+            </div>
         </div>
     `;
 }
