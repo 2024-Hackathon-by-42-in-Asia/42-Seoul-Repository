@@ -39,7 +39,7 @@ function generateResultSectionHTML(distance, co2Equivalents) {
     return `
         <div class="result-section mb-6 fade-in-slide-up">
             <h2 class="text-green-700 font-bold text-2xl mb-4">Congratulations! 🌍💚</h2>
-            <p class="text-green-700 font-semibold text-lg">By cycling <strong>${distance} km</strong> instead of riding a motorbike, you saved <span class="highlight-co2 text-3xl">${totalCO2Saved.toFixed(2)} kg</span> of CO2!</p>
+            <p class="text-green-700 font-semibold text-lg">By cycling or walking <strong>${distance} km</strong> instead of riding a motorbike, you saved <span class="highlight-co2 text-3xl">${totalCO2Saved.toFixed(2)} kg</span> of CO2!</p>
             <p class="text-green-600 font-bold text-xl mt-4">This is equivalent to growing <span class="highlight-trees text-3xl">${leafsEquivalent.toFixed(0)}</span> leaves!</p>
             <div id="leafContainer" class="mt-2 flex flex-wrap"></div>
         </div>
