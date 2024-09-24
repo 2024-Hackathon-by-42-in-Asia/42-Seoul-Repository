@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Panda Map</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+
+      #map {
+        height: 500px;
+        width: 60%;
+        margin-bottom: 20px;
+      }
+
+      .restaurant-list {
+        list-style-type: none; /* Remove default list styling */
+        padding: 0; /* Remove default padding */
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px; /* Space between items */
+      }
+
+      .restaurant-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        width: 300px; /* Set a fixed width for cards */
+      }
+
+      .restaurant-card img {
+        width: 100%; /* Make images responsive */
+        height: auto; /* Maintain aspect ratio */
+        border-radius: 5px;
+      }
+
+      .restaurant-card h3 {
+        margin: 10px 0; /* Space above and below the title */
+        font-size: 1.5em; /* Larger font size for the title */
+      }
+
+      .restaurant-card a {
+        display: inline-block; /* Make link behave like a button */
+        margin-top: 10px; /* Space above the link */
+        padding: 10px 15px; /* Padding for the button */
+        background: #007bff; /* Blue background */
+        color: white; /* White text */
+        border-radius: 5px; /* Rounded corners */
+        text-decoration: none; /* Remove underline */
+        transition: background 0.3s; /* Smooth transition */
+      }
+
+      .restaurant-card a:hover {
+        background: #0056b3; /* Darker blue on hover */
+      }
+
+      /* #map {
+        
+      } */
+
+      /* Custom InfoWindow styles */
+      .info-window {
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      .info-window strong {
+        font-size: 16px;
+        color: #333;
+      }
+
+      .info-window p {
+        margin: 5px 0;
+      }
+
+      .info-window a {
+        text-decoration: none;
+        color: #1e90ff;
+      }
+
+      .info-window a:hover {
+        text-decoration: underline;
+      }
+
+      .info-window img {
+        margin-top: 10px;
+        width: 100%;
+        height: auto;
+        max-width: 200px;
+        border-radius: 4px;
+      }
+
+      .info-window .rating {
+        margin-top: 8px;
+        font-weight: bold;
+        color: #ff8c00;
+      }
+
+      #order {
+        background-color: #4caf50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+      }
+
+      /* Main map and body styling */
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Side panel (overlay) styles */
+      #sidePanel {
+        position: fixed;
+        height: 100%;
+        width: 0;
+        top: 0;
+        right: 0;
+        background-color: #f4f4f4;
+        overflow-x: hidden;
+        transition: 0.5s;
+        padding-top: 60px;
+        box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.5);
+      }
+
+      #sidePanel a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: white;
+        display: block;
+        transition: 0.3s;
+      }
+
+      #sidePanel a:hover {
+        color: #000;
+      }
+
+      #sidePanel .closeBtn {
+        position: absolute;
+        top: 0;
+        right: 25px;
+        font-size: 36px;
+      }
+
+      #restaurantList {
+        margin: 20px;
+      }
+
+      /* Button to open the panel */
+      #listButton {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      #listButton:hover {
+        background-color: #45a049;
+      }
+    </style>
+    <script src="./env.js"></script>
+    <script>
+      // Function to open the side panel
+      function openPanel() {
+        let sidePanel = document.getElementById("sidePanel");
+        sidePanel.style.width = "30%";
+        console.log(this);
+        this.style.display = "none";
+        let closeButton = document.getElementById("closeBtn");
+        closeButton.style.display = "block";
+      }
+
+      // Function to close the side panel
+      function closePanel() {
+        let sidePanel = document.getElementById("sidePanel");
+        sidePanel.style.width = "0";
+        this.style.display = "none";
+        document.getElementById("listButton").style.display = "block";
+      }
+    </script>
+  </head>
+  <body>
+    <!-- <script
+      src= "https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&callback=initMap"
+      async
+      defer
+    ></script> -->
+    <h1>Food Panda Map</h1>
+    <form id="routeForm">
+      <label for="start">Starting Point: </label>
+      <input type="text" id="start" required /><br /><br />
+
+      <label for="destination">Destination: </label>
+      <input type="text" id="destination" required /><br /><br />
+
+      <button type="submit">Find My Route</button>
+    </form>
+    <br /><br />
+
+    <button id="listButton">Show Restaurants</button>
+
+    <!-- The side panel -->
+    <div id="sidePanel">
+      <a
+        href="javascript:void(0)"
+        class="closeBtn"
+        id="closeBtn"
+        style="color: black"
+        >&times;</a
+      >
+      <div id="restaurantList">
+        <h2>Nearby Restaurants</h2>
+        <ul id="restaurantItems"></ul>
+        <!-- Restaurant list will populate here -->
+      </div>
+    </div>
+
+    <div id="map"></div>
+    <div id="result"></div>
+    <script>
+      // Wait for the window to load, so that env.js is fully loaded and the GOOGLE_API_KEY is available.
+      window.onload = function () {
+        // Create a new script element
+        const script = document.createElement("script");
+
+        // Set the source URL dynamically, using the GOOGLE_API_KEY from env.js
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+
+        // Append the script to the document to load it
+        document.body.appendChild(script);
+      };
+    </script>
+    <script>
+      let map;
+      let start, destination;
+      let directionsService;
+      let directionsRenderer;
+
+      document
+        .getElementById("listButton")
+        .addEventListener("click", openPanel);
+      document.getElementById("closeBtn").addEventListener("click", closePanel);
+      function initMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 37.5665, lng: 126.978 }, // Initial center (Seoul)
+          zoom: 10,
+        });
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer();
+        directionsRenderer.setMap(map);
+      }
+
+      let endLat;
+      let endLng;
+      document
+        .getElementById("routeForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+
+          start = document.getElementById("start").value;
+          destination = document.getElementById("destination").value;
+          const transport = "TRANSIT";
+
+          const request = {
+            origin: start,
+            destination: destination,
+            travelMode: google.maps.TravelMode[transport],
+          };
+
+          directionsService.route(request, function (result, status) {
+            if (status === "OK") {
+              directionsRenderer.setDirections(result);
+              displayRouteInfo(result);
+              findNearbyRestaurants(destination); // Call to find restaurants
+            } else {
+              alert("길찾기 실패: " + status);
+            }
+          });
+        });
+
+      function displayRouteInfo(result) {
+        const route = result.routes[0];
+        const duration = route.legs[0].duration.text; // Estimated duration
+        const distance = route.legs[0].distance.text; // Distance
+        endLat = route.legs[0].end_location.lat();
+        endLng = route.legs[0].end_location.lng();
+
+        const circle = new google.maps.Circle({
+          strokeColor: "#FF0000", // Circle border color
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#FF0000", // Circle fill color
+          fillOpacity: 0.35,
+          map: map,
+          center: { lat: endLat, lng: endLng }, // Center of the circle (marker position)
+          radius: 500, // Radius in meters (1000 meters = 1 km)
+        });
+
+        document.getElementById("result").innerHTML = `
+                <h2>Results</h2>
+                <p>ETA: ${duration}</p>
+                <p>Distance: ${distance}</p>
+            `;
+        const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${start}&destination=${destination}&travelMode=TRANSIT`;
+        window.open(googleMapsUrl, "_blank");
+      }
+
+      function findNearbyRestaurants(destination) {
+        const service = new google.maps.places.PlacesService(map);
+        const request = {
+          location: { lat: endLat, lng: endLng }, // Use destination coordinates
+          radius: "500", // Search within 500 meters
+          type: ["restaurant"],
+        };
+
+        // function displayRestaurantList(restaurants) {
+        //   const listContainer = document.getElementById("restaurantItems");
+        //   listContainer.innerHTML = ""; // Clear any previous data
+
+        //   restaurants.forEach((place) => {
+        //     const listItem = document.createElement("li");
+        //     listItem.innerHTML = `
+        //             <strong>${place.name}</strong><br>
+        //             <small>${place.vicinity}</small><br>
+        //             <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        //               place.name
+        //             )}&query_place_id=${
+        //       place.place_id
+        //     }" target="_blank">View on Google Maps</a>
+        //         `;
+        //     listContainer.appendChild(listItem);
+
+        //     // Optional: Add markers to map
+        //     const marker = new google.maps.Marker({
+        //       map: map,
+        //       position: place.geometry.location,
+        //       title: place.name,
+        //     });
+
+        //     // You can add InfoWindow or other details as needed
+        //   });
+        // }
+
+        function displayRestaurantList(restaurants) {
+          const listContainer = document.getElementById("restaurantItems");
+          listContainer.innerHTML = ""; // Clear any previous data
+
+          restaurants.forEach((place) => {
+            const listItem = document.createElement("li");
+            listItem.style.margin = "20px";
+            listItem.classList.add("restaurant-card"); // Add a class for styling
+            const marker = new google.maps.Marker({
+              position: place.geometry.location,
+              map: map,
+              title: place.name,
+            });
+            const googleMapsLink = `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
+
+            service.getDetails(
+              { placeId: place.place_id },
+              function (placeDetails, detailsStatus) {
+                if (
+                  detailsStatus === google.maps.places.PlacesServiceStatus.OK
+                ) {
+                  // Build detailed InfoWindow content
+                  const googleMapsLink = `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
+                  const infoWindowContent = `
+                                    <div class="info-window">
+                                        <strong>${
+                                          placeDetails.name
+                                        }</strong><br>
+                                        <p>${placeDetails.formatted_address}</p>
+                                        <p><a href="${googleMapsLink}" target="_blank" style="color: white">View on Google Maps</a></p>
+                                        ${
+                                          placeDetails.website
+                                            ? `<p><a href="${placeDetails.website}" target="_blank">Visit Website</a></p>`
+                                            : ""
+                                        }
+                                        ${
+                                          placeDetails.rating
+                                            ? `<div class="rating">Rating: ${placeDetails.rating} (${placeDetails.user_ratings_total} reviews)</div>`
+                                            : ""
+                                        }
+                                        ${
+                                          placeDetails.photos &&
+                                          placeDetails.photos.length > 0
+                                            ? `<img src="${placeDetails.photos[0].getUrl(
+                                                {
+                                                  maxWidth: 200,
+                                                  maxHeight: 200,
+                                                }
+                                              )}" alt="${placeDetails.name}">`
+                                            : ""
+                                        }
+                                    <buttton id="order">Order</button>
+                                    </div>
+                                `;
+
+                  // Create InfoWindow
+                  const infoWindow = new google.maps.InfoWindow({
+                    content: infoWindowContent,
+                  });
+                  marker.addListener("click", function () {
+                    infoWindow.open(map, marker);
+                  });
+                  listItem.addEventListener("click", function () {
+                    infoWindow.open(map, marker);
+                  });
+                  // Add click listener to the marker to open the info window
+                }
+              }
+            );
+            // marker.addListener("click", function () {
+            //   infoWindow.open(map, marker);
+            // });
+            // listItem.addEventListener("click", function () {
+            //   infoWindow.open(map, marker);
+            // });
+            // Use a placeholder image or a specific image URL if available
+            const imageUrl =
+              place.photos && place.photos.length > 0
+                ? place.photos[0].getUrl({ maxWidth: 300 })
+                : "https://via.placeholder.com/300?text=No+Image"; // Fallback image
+
+            listItem.innerHTML = `
+                    <img src="${imageUrl}" alt="${place.name}">
+                    <h3>${place.name}</h3>
+                    <small>${place.vicinity}</small><br>
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      place.name
+                    )}&query_place_id=${
+              place.place_id
+            }" target="_blank">View on Google Maps</a>
+                `;
+
+            listContainer.appendChild(listItem);
+
+            // Optional: Add markers to map
+            // const marker = new google.maps.Marker({
+            //   map: map,
+            //   position: place.geometry.location,
+            //   title: place.name,
+            // });
+          });
+        }
+
+        service.nearbySearch(request, function (results, status) {
+          if (status === google.maps.places.PlacesServiceStatus.OK) {
+            displayRestaurantList(results);
+            results.forEach((place) => {
+              // const googleMapsLink = `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
+              // service.getDetails(
+              //   { placeId: place.place_id },
+              //   function (placeDetails, detailsStatus) {
+              //     if (
+              //       detailsStatus === google.maps.places.PlacesServiceStatus.OK
+              //     ) {
+              //       // Build detailed InfoWindow content
+              //       const googleMapsLink = `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
+              //       const infoWindowContent = `
+              //                       <div class="info-window">
+              //                           <strong>${
+              //                             placeDetails.name
+              //                           }</strong><br>
+              //                           <p>${placeDetails.formatted_address}</p>
+              //                           <p><a href="${googleMapsLink}" target="_blank">View on Google Maps</a></p>
+              //                           ${
+              //                             placeDetails.website
+              //                               ? `<p><a href="${placeDetails.website}" target="_blank">Visit Website</a></p>`
+              //                               : ""
+              //                           }
+              //                           ${
+              //                             placeDetails.rating
+              //                               ? `<div class="rating">Rating: ${placeDetails.rating} (${placeDetails.user_ratings_total} reviews)</div>`
+              //                               : ""
+              //                           }
+              //                           ${
+              //                             placeDetails.photos &&
+              //                             placeDetails.photos.length > 0
+              //                               ? `<img src="${placeDetails.photos[0].getUrl(
+              //                                   {
+              //                                     maxWidth: 200,
+              //                                     maxHeight: 200,
+              //                                   }
+              //                                 )}" alt="${placeDetails.name}">`
+              //                               : ""
+              //                           }
+              //                       <buttton id="order">Order</button>
+              //                       </div>
+              //                   `;
+              //       // Create InfoWindow
+              //       const infoWindow = new google.maps.InfoWindow({
+              //         content: infoWindowContent,
+              //       });
+              //       // Add click listener to the marker to open the info window
+              //     }
+              //   }
+              // );
+            });
+          } else {
+            alert("음식점 찾기 실패: " + status);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
