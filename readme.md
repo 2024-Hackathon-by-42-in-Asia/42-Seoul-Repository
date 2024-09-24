@@ -29,7 +29,7 @@ No specific settings or configurations are needed. The application runs entirely
 
 2. Open `index.html` in a modern web browser.
 
-3. For development with live reloading, you can use a local server. If you have Node.js installed, you can use `http-server`:
+3. For development with live reloading, you can use a local server. If you have Node.js installed, you can use `http-server` or live-server extension in vscode:
 
    ```
    npm install -g http-server
@@ -37,15 +37,6 @@ No specific settings or configurations are needed. The application runs entirely
    ```
 
    Then open `http://localhost:8080` in your browser.
-
-## File Structure
-
-- `index.html`: Main HTML file
-- `style.css`: Main CSS file
-- `script.js`: Main JavaScript file
-- `co2Calculations.js`: CO2 calculation functions
-- `data.js`: Food options data
-- `utilities.js`: Utility functions
 
 ## Contributing
 
